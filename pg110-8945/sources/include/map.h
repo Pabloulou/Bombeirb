@@ -76,15 +76,24 @@ void  map_set_cell_type(struct map* map, int x, int y, enum cell_type type);
 int map_is_inside(struct map* map, int x, int y);
 
 // Return a default static map
-struct map* map_get_static(char *map_name, struct game* game); //, struct game* game
+struct map* map_get_static(char *map_name, int level); //, struct game* game
 
 // Display the map on the screen
 void map_display(struct map* map);
 
+// Return the type of Bonus
+enum bonus_type map_get_bonus_type(struct map* map, int x, int y);
+
+// Return the map definition
+unsigned char* map_set(struct map* map);
 // Returns the number of the level where the door sends 
 int where_door_sends(struct map* map, int x,int y);
 
 // Returns if the door is open
 int door_is_open(struct map* map, int x, int y);
+
+// Open the door
+void open_door(struct map* map, int x, int y);
+
 
 #endif /* MAP_H_ */

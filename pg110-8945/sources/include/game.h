@@ -9,7 +9,9 @@
 #include <map.h>
 
 // Abstract data type
-struct game;
+
+
+
 
 // Create a new game
 struct game* game_new();
@@ -29,6 +31,9 @@ void game_display(struct game* game);
 // update
 int game_update(struct game* game);
 
+//==========================
+// expolosion management 
+void game_bomb_explode(struct game* game,struct player* player);
 // Set current level 
 void game_set_level(struct game* game, int level);
 

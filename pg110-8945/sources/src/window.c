@@ -26,7 +26,6 @@ void window_create(int width, int height) {
 void window_display_image(SDL_Surface* sprite, int x, int y) {
 	assert(window);
 	assert(sprite);
-
 	SDL_Rect place;
 	place.x = x;
 	place.y = y;

@@ -39,7 +39,7 @@
 #define BOMB_TTL2       "sprite/bomb2.png"
 #define BOMB_TTL3       "sprite/bomb3.png"
 #define BOMB_TTL4       "sprite/bomb4.png"
-
+#define EXPLOSION       "sprite/explosion.png"
 // Sprites of Bonus
 #define IMG_BONUS_BOMB_RANGE_INC  "sprite/bonus_bomb_range_inc.png"
 #define IMG_BONUS_BOMB_RANGE_DEC  "sprite/bonus_bomb_range_dec.png"
@@ -67,10 +67,31 @@ SDL_Surface* door_opened;
 SDL_Surface* door_closed;
 SDL_Surface* stone;
 SDL_Surface* tree;
+SDL_Surface* explosion;
+
 
 // bonus
 #define NB_BONUS 4
 SDL_Surface* bonus[NB_BONUS + 1];
+
+// bombs
+SDL_Surface* bombs_ttl[4];
+
+static void bombs_load(){
+	explosion=image_load(EXPLOSION);
+	bombs_ttl[0]=image_load(BOMB_TTL1);
+	bombs_ttl[1]=image_load(BOMB_TTL2);
+	bombs_ttl[2]=image_load(BOMB_TTL3);
+	bombs_ttl[3]=image_load(BOMB_TTL4);
+}
+
+static void bombs_unload() {
+	// numbers imgs
+	SDL_FreeSurface(explosion);
+	for (int i = 0; i < 4; i++) {
+		SDL_FreeSurface(bombs_ttl[i]);
+	}
+}	
 
 // player
 SDL_Surface* player_img[4];
@@ -159,6 +180,7 @@ void sprite_load() {
 	bonus_load();
 	banner_load();
 	player_load();
+	bombs_load();
 }
 
 void sprite_free() {
@@ -166,6 +188,13 @@ void sprite_free() {
 	bonus_unload();
 	banner_unload();
 	player_unload();
+	bombs_unload();
+}
+
+SDL_Surface* sprite_get_bomb_ttl(short number) {
+	assert(number >= 0 && number < 5);
+	if(number != 4) return bombs_ttl[number];
+	return explosion;
 }
 
 SDL_Surface* sprite_get_number(short number) {
@@ -212,6 +241,7 @@ SDL_Surface* sprite_get_box() {
 	assert(box);
 	return box;
 }
+
 
 SDL_Surface* sprite_get_key() {
 	assert(key);

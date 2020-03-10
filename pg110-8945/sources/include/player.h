@@ -9,7 +9,27 @@
 #include <constant.h>
 #include <game.h>
 
+typedef struct game {
+	struct map** maps;       // the game's map
+	short levels;        // nb maps of the game
+	short level;
+	struct player* player;
+}game;
+
+
+struct player {
+	int x, y;
+	enum direction direction;
+	int bombs;
+	int lives;
+	int range;
+	int keys;
+};
 struct player;
+
+// Move the player according to the current direction
+int player_move(struct player* player, struct map* map,game* game); //, game* game
+
 
 // Creates a new player with a given number of available bombs
 struct player* player_init(int bomb_number);
@@ -30,10 +50,16 @@ int  player_get_nb_bomb(struct player * player);
 void player_inc_nb_bomb(struct player * player);
 void player_dec_nb_bomb(struct player * player);
 
+// Set, Increase, Decrease the number of lives of the player
+int  player_get_nb_lives(struct player * player);
+void player_inc_nb_lives(struct player * player);
+void player_dec_nb_lives(struct player * player);
+// Set, Increase, Decrease the bombs' range
+int  player_get_range(struct player * player);
+void player_inc_range(struct player * player);
+void player_dec_range(struct player * player);
 
-// Move the player according to the current direction
-int player_move(struct player* player, struct map* map, struct game* game);
-static int player_move_aux(struct player* player, struct map* map, int x, int y, struct game* game);
+
 
 // Display the player on the screen
 void player_display(struct player* player);

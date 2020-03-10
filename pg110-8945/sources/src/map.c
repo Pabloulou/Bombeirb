@@ -20,6 +20,7 @@ struct map {
 	int width;
 	int height;
 	unsigned char* grid;
+	short level;
 };
 
 
@@ -83,6 +84,11 @@ enum cell_type map_get_cell_type(struct map* map, int x, int y)
 	assert(map && map_is_inside(map, x, y));
 	return map->grid[CELL(x,y)] & 0xf0;
 }
+enum bonus_type map_get_bonus_type(struct map* map, int x, int y){
+	assert(map && map_is_inside(map, x, y));
+	return map->grid[CELL(x,y)] & 0x0f;
+}
+
 
 void map_set_cell_type(struct map* map, int x, int y, enum cell_type type)
 {
@@ -93,10 +99,17 @@ void map_set_cell_type(struct map* map, int x, int y, enum cell_type type)
 int door_is_open(struct map* map, int x, int y)
 {
 	assert(map && map_is_inside(map, x, y));
-	if (map->grid[CELL(x,y)] && 0x01 == CELL_DOOR_CLOSE){
+	if ((map->grid[CELL(x,y)] & 0x01) == DOOR_CLOSE){
 		return 0;
 	}
 	return 1;
+}
+
+void open_door(struct map* map, int x, int y)
+{
+	assert(map && map_is_inside(map, x, y));
+	map->grid[CELL(x,y)] = (map->grid[CELL(x,y)] | 0x01);
+	printf("%i", map->grid[CELL(x,y)]);
 }
 
 int where_door_sends(struct map* map, int x,int y) 
@@ -104,6 +117,7 @@ int where_door_sends(struct map* map, int x,int y)
 	assert(map && map_is_inside(map, x, y));
 	return map->grid[CELL(x,y)] & 0x0e;
 }
+
 
 void display_bonus(struct map* map, int x, int y, unsigned char type)
 {
@@ -126,7 +140,20 @@ void display_bonus(struct map* map, int x, int y, unsigned char type)
 		break;
 	}
 }
+void bombera(int x,int y){
+			int count=3;
+			int k=10000;
+			while(count>0){	 
+				window_display_image(sprite_get_bomb_ttl(count), x, y);
+				while(k>0){
+					k--;
+				}
+				count--;
+				k=0;
+			}
+			window_display_image(sprite_get_bomb_ttl(4), x+SIZE_BLOC, y+SIZE_BLOC);
 
+}
 void display_scenery(struct map* map, int x, int  y, unsigned char type)
 {
 	switch (type & 0x0f) { // sub-types are encoded with the 4 less significant bits
@@ -146,6 +173,8 @@ void map_display(struct map* map)
 	assert(map->height > 0 && map->width > 0);
 
 	int x, y;
+	int count=3;
+	int k = 0;
 	for (int i = 0; i < map->width; i++) {
 	  for (int j = 0; j < map->height; j++) {
 	    x = i * SIZE_BLOC;
@@ -166,8 +195,14 @@ void map_display(struct map* map)
 	    case CELL_KEY:
 	      window_display_image(sprite_get_key(), x, y);
 	      break;
+		case CELL_BOMB :
+
+		    // window_display_image(sprite_get_bomb_ttl(count), x, y);
+			bombera(x,y);
+			
+			break;
 	    case CELL_DOOR:
-	      switch (type & 0x0e) {
+	      switch (type & 0x01) {
 		  		case DOOR_OPEN:
 			  	  window_display_image(sprite_get_door_opened(), x, y);
 			  	  break;
@@ -181,11 +216,11 @@ void map_display(struct map* map)
 	}
 }
 
-struct map* map_get_static(char *map_name, struct game *game) //struct game *game
+struct map* map_get_static(char *map_name, int level) 
 {	
-	assert(game);
+	//assert(game);
 	char current_map[30];
-	sprintf(current_map, "./maps/%s%d.txt",map_name,game->level);//game->level
+	sprintf(current_map, "./maps/%s%d.txt",map_name,level);//game->level
 
 	FILE *file = fopen(current_map, "r");
   	if (file == NULL)

@@ -12,13 +12,6 @@
 #include <map.h>
 
 
-struct game {
-	struct map** maps;       // the game's map
-	short levels;        // nb maps of the game
-	short level;
-	struct player* player;
-};
-
 struct game* game_new(void) {
 	sprite_load(); // load sprites into process memory
 
@@ -29,14 +22,15 @@ struct game* game_new(void) {
 	int value;
 	fscanf(file, "%i", &value);
 
+
 	struct game* game = malloc(sizeof(*game));
 	game->maps = malloc(sizeof(struct game));
 	game->levels = value;
 	
 	fscanf(file, "%i:", &value);
+
 	game->level = value;
 	game->player = player_init(3);
-	
 	
 	int x,y;
 	fscanf(file, "%i,%i", &x,&y);
@@ -44,7 +38,10 @@ struct game* game_new(void) {
 	char *map_name = malloc(15 * sizeof(char));
 	fscanf(file, "%s", map_name);
 	
-	game->maps[0] = map_get_static(map_name, game);//,game
+	for (int i=0; i<game->levels; i++){
+		game->maps[i] = map_get_static(map_name, i);
+	}
+
 	//Set default location of the player
 	player_set_position(game->player, x, y);
 
@@ -88,6 +85,7 @@ void game_banner_display(struct game* game) {
 	struct map* map = game_get_current_map(game);
 
 	int y = (map_get_height(map)) * SIZE_BLOC;
+	// fill the banner cells 
 	for (int i = 0; i < map_get_width(map); i++)
 		window_display_image(sprite_get_banner_line(), i * SIZE_BLOC, y);
 
@@ -97,7 +95,7 @@ void game_banner_display(struct game* game) {
 	window_display_image(sprite_get_banner_life(), x, y);
 
 	x = white_bloc + SIZE_BLOC;
-	window_display_image(sprite_get_number(7), x, y);
+	window_display_image(sprite_get_number(player_get_nb_lives(game_get_player(game))), x, y);
 
 	x = 2 * white_bloc + 2 * SIZE_BLOC;
 	window_display_image(sprite_get_banner_bomb(), x, y);
@@ -110,7 +108,7 @@ void game_banner_display(struct game* game) {
 	window_display_image(sprite_get_banner_range(), x, y);
 
 	x = 3 * white_bloc + 5 * SIZE_BLOC;
-	window_display_image(sprite_get_number(3), x, y);
+	window_display_image(sprite_get_number(player_get_range(game_get_player(game))), x, y);
 }
 
 void game_display(struct game* game) {
@@ -123,7 +121,41 @@ void game_display(struct game* game) {
 
 	window_refresh();
 }
+void game_bomb_explode(struct game* game,struct player* player){
+		assert(game);
+		assert(player); // ??
 
+		struct map* map = game_get_current_map(game);
+		int x=player_get_x(player);
+		int y=player_get_y(player);
+		int range=player->range;
+		if(player->bombs > 0){
+			player_dec_nb_bomb(player);
+			map_set_cell_type(map, x, y, CELL_BOMB);
+			// window_display_image(sprite_get_bomb_ttl(4), x,y);
+
+			// while(count>0){
+			// 	window_display_image(sprite_get_bomb_ttl(count), x*SIZE_BLOC, y*SIZE_BLOC);
+			// 	count--;
+			// }
+
+			// map_set_cell_type(map, x, y, CELL_EMPTY);
+			// while(range){
+			// 	map_set_cell_type(map, x+range, y, CELL_EMPTY);
+			// 	map_set_cell_type(map, x-range, y, CELL_EMPTY);
+			// 	map_set_cell_type(map, x, y+range, CELL_EMPTY);
+			// 	map_set_cell_type(map, x, y-range, CELL_EMPTY);
+			// 	range--;
+			// }
+			// player_inc_nb_bomb(player);
+
+			
+		}
+
+
+
+
+}
 static short input_keyboard(struct game* game) {
 	SDL_Event event;
 	struct player* player = game_get_player(game);
@@ -155,6 +187,7 @@ static short input_keyboard(struct game* game) {
 				player_move(player, map, game);
 				break;
 			case SDLK_SPACE:
+				game_bomb_explode(game,player);
 				break;
 			default:
 				break;
@@ -167,6 +200,7 @@ static short input_keyboard(struct game* game) {
 }
 
 int game_update(struct game* game) {
+
 	if (input_keyboard(game))
 		return 1; // exit game
 
